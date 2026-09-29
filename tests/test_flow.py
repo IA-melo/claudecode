@@ -99,3 +99,26 @@ def test_pick_model_skips_embeddings():
     from localgh.llm import pick_model
 
     assert pick_model(["text-embedding-nomic", "qwen3.5-4b-mlx"]) == "qwen3.5-4b-mlx"
+
+
+def test_mcp_lists_and_calls_tool(tmp_path):
+    from localgh import mcp
+    from localgh.outbox import Outbox
+
+    class Cfg:
+        repo = "o/r"
+
+    class GH:
+        def recent_issues(self):
+            return [{"number": 2, "state": "open", "title": "Estado del proyecto", "labels": [], "body": "hecho"}]
+
+        def commits(self):
+            return [{"sha": "abcdef123", "commit": {"message": "init\nx"}}]
+
+    box = Outbox(str(tmp_path / "o.db"))
+    r = mcp.handle({"id": 1, "method": "tools/list"}, Cfg, GH(), box)
+    assert r["result"]["tools"][0]["name"] == "repo_status"
+    r = mcp.handle({"id": 2, "method": "tools/call", "params": {}}, Cfg, GH(), box)
+    text = r["result"]["content"][0]["text"]
+    assert "o/r" in text
+    assert mcp.handle({"method": "notifications/initialized"}, Cfg, GH(), box) is None

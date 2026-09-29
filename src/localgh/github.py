@@ -32,3 +32,10 @@ class GitHub:
 
     def add_labels(self, number: int, labels: list[str]):
         return self._req("POST", f"/issues/{number}/labels", {"labels": labels})
+
+    def recent_issues(self, limit: int = 15) -> list[dict]:
+        items = self._req("GET", f"/issues?state=all&per_page={limit}")
+        return [i for i in items if "pull_request" not in i]
+
+    def commits(self, limit: int = 8) -> list[dict]:
+        return self._req("GET", f"/commits?per_page={limit}")

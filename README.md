@@ -27,3 +27,15 @@ Token: fine-grained PAT limitado a este repo con permiso Issues (lectura/escritu
 Tests: `pip install -U pip && pip install -e .[dev] && pytest`
 
 Los issues procesados reciben la etiqueta `triaged` y no se vuelven a tocar. Si `LLM_MODEL` esta vacio se usa el primer modelo de chat cargado.
+
+## Preguntar estilo Jarvis
+
+Desde la terminal:
+
+    localgh ask como vamos
+
+Desde el chat de LM Studio (Qwen llama a la herramienta `repo_status`): en LM Studio abre Program > Install > Edit mcp.json y agrega, cambiando la ruta y el token:
+
+    {"mcpServers": {"localgh": {"command": "/RUTA/claudecode/.venv/bin/localgh", "args": ["mcp"], "env": {"GITHUB_TOKEN": "TU_TOKEN", "GITHUB_REPO": "IA-melo/claudecode"}}}}
+
+Luego pregunta en el chat, por ejemplo: "como va el proyecto". Activa el servidor localgh en el chat.

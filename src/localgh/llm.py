@@ -39,7 +39,7 @@ class LocalLLM:
     def alive(self) -> bool:
         return bool(self.models())
 
-    def chat(self, system: str, user: str) -> str:
+    def chat(self, system: str, user: str, *, text: bool = False) -> str:
         body = {
             "model": self.model,
             "temperature": 0,
@@ -59,11 +59,13 @@ class LocalLLM:
         )
         with urllib.request.urlopen(req, timeout=300) as r:
             self.last = json.load(r)
-        text = self.last["choices"][0]["message"].get("content") or ""
-        text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
-        text = re.sub(r"<think>.*", "", text, flags=re.S)
-        m = re.search(r"\{.*\}", text, flags=re.S)
-        return m.group(0) if m else text.strip()
+        out = self.last["choices"][0]["message"].get("content") or ""
+        out = re.sub(r"<think>.*?</think>", "", out, flags=re.S)
+        out = re.sub(r"<think>.*", "", out, flags=re.S)
+        if text:
+            return out.strip()
+        m = re.search(r"\{.*\}", out, flags=re.S)
+        return m.group(0) if m else out.strip()
 
 
 def pick_model(models: list[str]) -> str:
