@@ -8,8 +8,10 @@ Flujo: semaforo (1 inferencia a la vez) -> lee issues -> LLM local (JSON estrict
 
 ```bash
 git clone https://github.com/IA-melo/claudecode && cd claudecode
-python -m venv .venv && source .venv/bin/activate && pip install -e .
-cp .env.example .env   # rellena GITHUB_TOKEN; luego: set -a; source .env; set +a
+python -m venv .venv && source .venv/bin/activate && pip install -U pip && pip install -e .
+cp .env.example .env
+nano .env   # rellena GITHUB_TOKEN y LLM_MODEL
+set -a; source .env; set +a
 
 localgh doctor            # lista modelos de LM Studio, red, token, cola
 localgh triage            # dry-run: muestra que haria
@@ -21,4 +23,4 @@ LM Studio: carga Qwen 3.5 4B, ve a Developer > Start Server (puerto 1234) y copi
 
 Token: fine-grained PAT limitado a este repo con permiso Issues (lectura/escritura). Nunca lo subas al repo.
 
-Tests: `pip install -e .[dev] && pytest`
+Tests: `pip install -U pip && pip install -e .[dev] && pytest`

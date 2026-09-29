@@ -2,7 +2,7 @@
 name = "localgh"
 version = "0.1.0"
 description = "Agente local (Ollama) que gestiona issues de GitHub con semaforo y cola offline"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = []
 
 [project.optional-dependencies]
