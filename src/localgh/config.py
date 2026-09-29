@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class Config:
     token: str
     repo: str
-    ollama_url: str
+    llm_url: str
     model: str
     db_path: str
     lock_path: str
@@ -17,8 +17,8 @@ class Config:
         return cls(
             token=e("GITHUB_TOKEN", ""),
             repo=e("GITHUB_REPO", "IA-melo/claudecode"),
-            ollama_url=e("OLLAMA_URL", "http://localhost:11434").rstrip("/"),
-            model=e("OLLAMA_MODEL", "qwen3:4b"),
+            llm_url=e("LLM_URL", "http://localhost:1234/v1").rstrip("/"),
+            model=e("LLM_MODEL", ""),
             db_path=e("LOCALGH_DB", "localgh.db"),
             lock_path=e("LOCALGH_LOCK", "/tmp/localgh.lock"),
         )

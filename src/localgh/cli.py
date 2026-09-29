@@ -5,7 +5,7 @@ from . import agent
 from .config import Config
 from .gate import Busy, gate
 from .github import GitHub
-from .llm import Ollama
+from .llm import LocalLLM
 from .net import online
 from .outbox import Outbox
 
@@ -13,7 +13,7 @@ from .outbox import Outbox
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="localgh")
     sub = p.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("doctor", help="comprueba Ollama, red y token")
+    sub.add_parser("doctor", help="comprueba LM Studio, red y token")
     t = sub.add_parser("triage", help="clasifica y comenta issues abiertos")
     t.add_argument("--apply", action="store_true", help="escribir en GitHub (por defecto dry-run)")
     t.add_argument("--limit", type=int, default=5)
@@ -21,10 +21,13 @@ def main(argv=None) -> int:
     args = p.parse_args(argv)
 
     cfg = Config.from_env()
-    gh, llm, box = GitHub(cfg.token, cfg.repo), Ollama(cfg.ollama_url, cfg.model), Outbox(cfg.db_path)
+    gh, llm, box = GitHub(cfg.token, cfg.repo), LocalLLM(cfg.llm_url, cfg.model), Outbox(cfg.db_path)
 
     if args.cmd == "doctor":
-        print(f"ollama ({cfg.model}): {'ok' if llm.alive() else 'NO responde'}")
+        ms = llm.models()
+        print(f"LM Studio ({cfg.llm_url}): {'ok' if ms else 'NO responde (Developer > Start Server)'}")
+        print(f"modelos cargados: {ms}")
+        print(f"LLM_MODEL: {cfg.model or 'FALTA (copia uno de la lista)'}")
         print(f"internet: {'ok' if online() else 'sin conexion'}")
         print(f"token: {'definido' if cfg.token else 'FALTA GITHUB_TOKEN'}")
         print(f"pendientes en cola: {len(box.pending())}")
