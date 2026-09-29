@@ -1,5 +1,6 @@
 """Cliente para servidores compatibles con OpenAI (LM Studio, Ollama /v1, etc.)."""
 import json
+import os
 import re
 import urllib.request
 
@@ -23,6 +24,7 @@ SCHEMA = {
 class LocalLLM:
     def __init__(self, url: str, model: str):
         self.url, self.model = url.rstrip("/"), model
+        self.last: dict = {}
 
     def _get(self, path: str):
         with urllib.request.urlopen(f"{self.url}{path}", timeout=5) as r:
@@ -41,17 +43,24 @@ class LocalLLM:
         body = {
             "model": self.model,
             "temperature": 0,
-            "response_format": SCHEMA,
+            "max_tokens": 2048,
+            "chat_template_kwargs": {"enable_thinking": False},
             "messages": [
                 {"role": "system", "content": system},
-                {"role": "user", "content": user},
+                {"role": "user", "content": user + "\n/no_think"},
             ],
         }
+        if os.environ.get("LLM_STRUCTURED") == "1":
+            body["response_format"] = SCHEMA
         req = urllib.request.Request(
             f"{self.url}/chat/completions",
             data=json.dumps(body).encode(),
             headers={"Content-Type": "application/json"},
         )
         with urllib.request.urlopen(req, timeout=300) as r:
-            text = json.load(r)["choices"][0]["message"]["content"] or ""
-        return re.sub(r"<think>.*?</think>", "", text, flags=re.S).strip()
+            self.last = json.load(r)
+        text = self.last["choices"][0]["message"].get("content") or ""
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
+        text = re.sub(r"<think>.*", "", text, flags=re.S)
+        m = re.search(r"\{.*\}", text, flags=re.S)
+        return m.group(0) if m else text.strip()

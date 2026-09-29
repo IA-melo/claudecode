@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 
 from . import agent
@@ -17,6 +18,7 @@ def main(argv=None) -> int:
     t = sub.add_parser("triage", help="clasifica y comenta issues abiertos")
     t.add_argument("--apply", action="store_true", help="escribir en GitHub (por defecto dry-run)")
     t.add_argument("--limit", type=int, default=5)
+    t.add_argument("--debug", action="store_true", help="muestra la respuesta cruda del modelo")
     sub.add_parser("sync", help="envia la cola pendiente")
     args = p.parse_args(argv)
 
@@ -52,6 +54,8 @@ def main(argv=None) -> int:
                 result = agent.triage(llm, issue)
         except (Busy, agent.BadOutput) as e:
             print(f"#{issue['number']}: omitido ({e})")
+            if args.debug:
+                print(json.dumps(llm.last, ensure_ascii=False, indent=2)[:2000])
             continue
         status = agent.deliver(gh, box, issue["number"], result, online=online(), apply=args.apply)
         print(f"#{issue['number']} [{status}] {result['labels']} {result['comment'][:80]}")
