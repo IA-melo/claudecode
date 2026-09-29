@@ -43,7 +43,10 @@ def main(argv=None) -> int:
     if not online():
         print("sin internet: no puedo leer issues")
         return 1
-    for issue in gh.open_issues(args.limit):
+    issues = gh.open_issues(args.limit)
+    if not issues:
+        print(f"no hay issues abiertos en {cfg.repo}")
+    for issue in issues:
         try:
             with gate(cfg.lock_path):
                 result = agent.triage(llm, issue)
