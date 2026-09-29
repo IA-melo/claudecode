@@ -64,3 +64,8 @@ class LocalLLM:
         text = re.sub(r"<think>.*", "", text, flags=re.S)
         m = re.search(r"\{.*\}", text, flags=re.S)
         return m.group(0) if m else text.strip()
+
+
+def pick_model(models: list[str]) -> str:
+    chat = [m for m in models if "embed" not in m.lower()]
+    return chat[0] if chat else ""

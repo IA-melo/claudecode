@@ -72,3 +72,30 @@ def test_gate_is_exclusive(tmp_path):
         with gate(lock, wait=0.2, poll=0.05):
             pass
     t.join()
+
+
+def test_needs_triage_skips_labeled():
+    assert agent.needs_triage({"labels": [{"name": "bug"}]})
+    assert not agent.needs_triage({"labels": [{"name": "triaged"}]})
+
+
+def test_sent_adds_triaged_label(tmp_path):
+    box, gh = Outbox(str(tmp_path / "o.db")), FakeGH()
+    agent.deliver(gh, box, 3, {"labels": ["bug"], "comment": "x"}, online=True, apply=True)
+    assert ("labels", 3, ["bug", "triaged"]) in gh.calls
+
+
+def test_network_failure_queues(tmp_path):
+    class Down(FakeGH):
+        def add_labels(self, n, labels):
+            raise OSError("caido")
+
+    box = Outbox(str(tmp_path / "o.db"))
+    st = agent.deliver(Down(), box, 4, {"labels": [], "comment": "x"}, online=True, apply=True)
+    assert st == "queued" and len(box.pending()) == 1
+
+
+def test_pick_model_skips_embeddings():
+    from localgh.llm import pick_model
+
+    assert pick_model(["text-embedding-nomic", "qwen3.5-4b-mlx"]) == "qwen3.5-4b-mlx"

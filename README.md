@@ -17,6 +17,7 @@ localgh doctor            # lista modelos de LM Studio, red, token, cola
 localgh triage            # dry-run: muestra que haria
 localgh triage --apply    # etiqueta y comenta de verdad
 localgh sync              # envia lo que quedo en cola sin internet
+localgh watch --apply --every 300   # revisa issues nuevos cada 5 min
 ```
 
 LM Studio: carga Qwen 3.5 4B, ve a Developer > Start Server (puerto 1234) y copia el id del modelo que muestra `localgh doctor` en `LLM_MODEL`.
@@ -24,3 +25,5 @@ LM Studio: carga Qwen 3.5 4B, ve a Developer > Start Server (puerto 1234) y copi
 Token: fine-grained PAT limitado a este repo con permiso Issues (lectura/escritura). Nunca lo subas al repo.
 
 Tests: `pip install -U pip && pip install -e .[dev] && pytest`
+
+Los issues procesados reciben la etiqueta `triaged` y no se vuelven a tocar. Si `LLM_MODEL` esta vacio se usa el primer modelo de chat cargado.
